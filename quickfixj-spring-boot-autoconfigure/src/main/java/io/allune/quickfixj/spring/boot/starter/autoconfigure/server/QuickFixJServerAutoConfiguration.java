@@ -42,6 +42,7 @@ import quickfix.CompositeLogFactory;
 import quickfix.ConfigError;
 import quickfix.DefaultMessageFactory;
 import quickfix.ExecutorFactory;
+import quickfix.FieldConvertError;
 import quickfix.FileLogFactory;
 import quickfix.FileStoreFactory;
 import quickfix.JdbcLogFactory;
@@ -385,7 +386,21 @@ public class QuickFixJServerAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnProperty(prefix = "quickfixj.server.concurrent", name = "enabled", havingValue = "true")
 	public static class ThreadedSocketAcceptorConfiguration {
+
+		/**
+		 * Creates the registrar responsible for wiring dynamic session providers into the
+		 * {@link ThreadedSocketAcceptor} when dynamic sessions are enabled.
+		 *
+		 * @return The dynamic session provider registrar
+		 */
+		@Bean
+		@ConditionalOnMissingBean
+		@ConditionalOnProperty(prefix = "quickfixj.server.dynamic", name = "enabled", havingValue = "true")
+		public ThreadedSocketAcceptorDynamicSessionProviderRegistrar threadedSocketAcceptorDynamicSessionProviderRegistrar() {
+			return new ThreadedSocketAcceptorDynamicSessionProviderRegistrar();
+		}
 
 		/**
 		 * Creates a multi threaded {@link Acceptor acceptor} bean
@@ -401,15 +416,15 @@ public class QuickFixJServerAutoConfiguration {
 		 */
 		@Bean
 		@ConditionalOnMissingBean
-		@ConditionalOnProperty(prefix = "quickfixj.server.concurrent", name = "enabled", havingValue = "true")
 		public Acceptor serverAcceptor(
 				Application serverApplication,
 				MessageStoreFactory serverMessageStoreFactory,
 				SessionSettings serverSessionSettings,
 				LogFactory serverLogFactory,
 				MessageFactory serverMessageFactory,
-				Optional<ExecutorFactory> serverExecutorFactory
-		) throws ConfigError {
+				Optional<ExecutorFactory> serverExecutorFactory,
+				Optional<ThreadedSocketAcceptorDynamicSessionProviderRegistrar> dynamicSessionProviderRegistrar
+		) throws ConfigError, FieldConvertError {
 
 			ThreadedSocketAcceptor socketAcceptor = ThreadedSocketAcceptor.newBuilder()
 					.withApplication(serverApplication)
@@ -419,6 +434,16 @@ public class QuickFixJServerAutoConfiguration {
 					.withMessageFactory(serverMessageFactory)
 					.build();
 			serverExecutorFactory.ifPresent(socketAcceptor::setExecutorFactory);
+			if (dynamicSessionProviderRegistrar.isPresent()) {
+				dynamicSessionProviderRegistrar.get().registerDynamicSessionProviders(
+						socketAcceptor,
+						serverSessionSettings,
+						serverApplication,
+						serverMessageStoreFactory,
+						serverLogFactory,
+						serverMessageFactory
+				);
+			}
 			return socketAcceptor;
 		}
 	}
