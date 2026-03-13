@@ -42,7 +42,6 @@ import quickfix.CompositeLogFactory;
 import quickfix.ConfigError;
 import quickfix.DefaultMessageFactory;
 import quickfix.ExecutorFactory;
-import quickfix.FieldConvertError;
 import quickfix.FileLogFactory;
 import quickfix.FileStoreFactory;
 import quickfix.JdbcLogFactory;
@@ -386,7 +385,6 @@ public class QuickFixJServerAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnProperty(prefix = "quickfixj.server.concurrent", name = "enabled", havingValue = "true")
 	public static class ThreadedSocketAcceptorConfiguration {
 
 		/**
@@ -416,6 +414,10 @@ public class QuickFixJServerAutoConfiguration {
 		 */
 		@Bean
 		@ConditionalOnMissingBean
+		@ConditionalOnExpression(
+			"${quickfixj.server.concurrent.enabled:false} == true || "
+				+ "${quickfixj.server.dynamic.enabled:false} == true"
+		)
 		public Acceptor serverAcceptor(
 				Application serverApplication,
 				MessageStoreFactory serverMessageStoreFactory,
@@ -424,7 +426,7 @@ public class QuickFixJServerAutoConfiguration {
 				MessageFactory serverMessageFactory,
 				Optional<ExecutorFactory> serverExecutorFactory,
 				Optional<ThreadedSocketAcceptorDynamicSessionProviderRegistrar> dynamicSessionProviderRegistrar
-		) throws ConfigError, FieldConvertError {
+		) throws ConfigError {
 
 			ThreadedSocketAcceptor socketAcceptor = ThreadedSocketAcceptor.newBuilder()
 					.withApplication(serverApplication)

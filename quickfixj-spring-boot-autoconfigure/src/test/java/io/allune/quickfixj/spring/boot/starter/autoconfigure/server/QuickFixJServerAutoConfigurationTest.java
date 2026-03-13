@@ -297,6 +297,67 @@ public class QuickFixJServerAutoConfigurationTest {
 	}
 
 	@Test
+	public void shouldFailFastWhenDynamicSessionTemplateSettingIsInvalid() {
+		Application application = mock(Application.class);
+		MessageStoreFactory messageStoreFactory = mock(MessageStoreFactory.class);
+		LogFactory logFactory = mock(LogFactory.class);
+		MessageFactory messageFactory = mock(MessageFactory.class);
+		SessionSettings sessionSettings = new SessionSettings();
+
+		SessionID templateSessionId = new SessionID(FixVersions.BEGINSTRING_FIX44, "DYN_EXEC", "DYN_CLIENT");
+		sessionSettings.setString(SessionSettings.BEGINSTRING, FixVersions.BEGINSTRING_FIX44);
+		sessionSettings.setString(SessionSettings.SENDERCOMPID, "DYN_EXEC");
+		sessionSettings.setString(SessionSettings.TARGETCOMPID, "DYN_CLIENT");
+		sessionSettings.setString(templateSessionId, SessionFactory.SETTING_CONNECTION_TYPE, "acceptor");
+		sessionSettings.setString(templateSessionId, "SocketAcceptPort", "9899");
+		sessionSettings.setString(templateSessionId, "AcceptorTemplate", "NOT_A_BOOLEAN");
+
+		ThreadedSocketAcceptorConfiguration acceptorConfiguration = new ThreadedSocketAcceptorConfiguration();
+		ThreadedSocketAcceptorDynamicSessionProviderRegistrar registrar = new ThreadedSocketAcceptorDynamicSessionProviderRegistrar();
+
+		assertThatThrownBy(() -> acceptorConfiguration.serverAcceptor(
+				application,
+				messageStoreFactory,
+				sessionSettings,
+				logFactory,
+				messageFactory,
+				Optional.empty(),
+				Optional.of(registrar)
+		))
+				.isInstanceOf(ConfigError.class)
+				.hasMessageContaining("AcceptorTemplate")
+				.hasMessageContaining(templateSessionId.toString());
+	}
+
+	@Test
+	public void shouldRejectSocketAcceptPortOutsideValidRange() {
+		SessionSettings sessionSettings = new SessionSettings();
+		SessionID templateSessionId = new SessionID(FixVersions.BEGINSTRING_FIX44, "DYN_EXEC", "DYN_CLIENT");
+		ThreadedSocketAcceptorDynamicSessionProviderRegistrar registrar = new ThreadedSocketAcceptorDynamicSessionProviderRegistrar();
+
+		sessionSettings.setString(templateSessionId, "SocketAcceptPort", "70000");
+
+		assertThatThrownBy(() -> registrar.getAcceptorAddress(sessionSettings, templateSessionId))
+				.isInstanceOf(ConfigError.class)
+				.hasMessageContaining("SocketAcceptPort")
+				.hasMessageContaining("70000");
+	}
+
+	@Test
+	public void shouldRejectSocketAcceptPortThatOverflowsInt() {
+		SessionSettings sessionSettings = new SessionSettings();
+		SessionID templateSessionId = new SessionID(FixVersions.BEGINSTRING_FIX44, "DYN_EXEC", "DYN_CLIENT");
+		ThreadedSocketAcceptorDynamicSessionProviderRegistrar registrar = new ThreadedSocketAcceptorDynamicSessionProviderRegistrar();
+
+		sessionSettings.setString(templateSessionId, "SocketAcceptPort", "2147483648");
+
+		assertThatThrownBy(() -> registrar.getAcceptorAddress(sessionSettings, templateSessionId))
+				.isInstanceOf(ConfigError.class)
+				.hasMessageContaining("SocketAcceptPort")
+				.hasMessageContaining("2147483648");
+	}
+
+	@Test
 	public void shouldThrowConfigurationExceptionCreatingServerAcceptorMBeanGivenNullAcceptor() {
 		// Given
 		QuickFixJServerAutoConfiguration autoConfiguration = new QuickFixJServerAutoConfiguration();

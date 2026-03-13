@@ -45,40 +45,49 @@ public class ThreadedSocketAcceptorDynamicSessionProviderRegistrar {
 			MessageStoreFactory messageStoreFactory,
 			LogFactory logFactory,
 			MessageFactory messageFactory
-	) throws ConfigError, FieldConvertError {
-		Iterator<SessionID> iterator = settings.sectionIterator();
-		while (iterator.hasNext()) {
-			SessionID sessionId = iterator.next();
-			if (!isAcceptorTemplate(settings, sessionId)) {
-				continue;
-			}
+	) throws ConfigError {
+		try {
+			Iterator<SessionID> iterator = settings.sectionIterator();
+			while (iterator.hasNext()) {
+				SessionID sessionId = iterator.next();
+				if (!isAcceptorTemplate(settings, sessionId)) {
+					continue;
+				}
 
-			acceptor.setSessionProvider(
-					getAcceptorAddress(settings, sessionId),
-					new DynamicAcceptorSessionProvider(
-							settings,
-							sessionId,
-							application,
-							messageStoreFactory,
-							logFactory,
-							messageFactory
-					)
-			);
+				acceptor.setSessionProvider(
+						getAcceptorAddress(settings, sessionId),
+						new DynamicAcceptorSessionProvider(
+								settings,
+								sessionId,
+								application,
+								messageStoreFactory,
+								logFactory,
+								messageFactory
+						)
+				);
+			}
+		} catch (FieldConvertError e) {
+			throw new ConfigError(e);
 		}
 	}
 
-	boolean isAcceptorTemplate(SessionSettings settings, SessionID sessionId) {
-		try {
-			return settings.isSetting(sessionId, Acceptor.SETTING_ACCEPTOR_TEMPLATE)
-					&& settings.getBool(sessionId, Acceptor.SETTING_ACCEPTOR_TEMPLATE);
-		} catch (ConfigError | FieldConvertError e) {
-			return false;
-		}
+	boolean isAcceptorTemplate(SessionSettings settings, SessionID sessionId) throws ConfigError, FieldConvertError {
+		return settings.isSetting(sessionId, Acceptor.SETTING_ACCEPTOR_TEMPLATE)
+				&& settings.getBool(sessionId, Acceptor.SETTING_ACCEPTOR_TEMPLATE);
 	}
 
 	InetSocketAddress getAcceptorAddress(SessionSettings settings, SessionID sessionId)
 			throws ConfigError, FieldConvertError {
-		int port = (int) settings.getLong(sessionId, Acceptor.SETTING_SOCKET_ACCEPT_PORT);
+		long configuredPort = settings.getLong(sessionId, Acceptor.SETTING_SOCKET_ACCEPT_PORT);
+		final int port;
+		try {
+			port = Math.toIntExact(configuredPort);
+		} catch (ArithmeticException e) {
+			throw new ConfigError("SocketAcceptPort out of int range for session " + sessionId + ": " + configuredPort, e);
+		}
+		if (port < 0 || port > 65_535) {
+			throw new ConfigError("SocketAcceptPort out of valid range for session " + sessionId + ": " + configuredPort);
+		}
 		return new InetSocketAddress(port);
 	}
 }
