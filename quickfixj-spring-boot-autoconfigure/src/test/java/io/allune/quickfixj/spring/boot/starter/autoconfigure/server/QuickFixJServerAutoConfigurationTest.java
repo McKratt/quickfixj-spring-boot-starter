@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import quickfix.Acceptor;
 import quickfix.Application;
+import quickfix.ApplicationAdapter;
 import quickfix.CachedFileStoreFactory;
 import quickfix.CompositeLogFactory;
 import quickfix.ConfigError;
@@ -61,7 +62,6 @@ import javax.management.ObjectName;
 import java.net.InetSocketAddress;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -262,7 +262,7 @@ public class QuickFixJServerAutoConfigurationTest {
 
 	@Test
 	public void shouldRegisterDynamicSessionProviderForThreadedAcceptor() throws Exception {
-		Application application = new NoopApplication();
+		Application application = new ApplicationAdapter();
 		SessionSettings sessionSettings = new SessionSettings();
 
 		SessionID templateSessionId = new SessionID(FixVersions.BEGINSTRING_FIX44, "DYN_EXEC", "DYN_CLIENT");
@@ -567,37 +567,6 @@ public class QuickFixJServerAutoConfigurationTest {
 	@EnableAutoConfiguration
 	@PropertySource("classpath:server-single-threaded/single-threaded-application.properties")
 	static class SingleThreadedServerAcceptorConfiguration {
-	}
-
-	private static final class NoopApplication implements Application {
-
-		@Override
-		public void onCreate(SessionID sessionId) {
-		}
-
-		@Override
-		public void onLogon(SessionID sessionId) {
-		}
-
-		@Override
-		public void onLogout(SessionID sessionId) {
-		}
-
-		@Override
-		public void toAdmin(quickfix.Message message, SessionID sessionId) {
-		}
-
-		@Override
-		public void fromAdmin(quickfix.Message message, SessionID sessionId) {
-		}
-
-		@Override
-		public void toApp(quickfix.Message message, SessionID sessionId) {
-		}
-
-		@Override
-		public void fromApp(quickfix.Message message, SessionID sessionId) {
-		}
 	}
 
 	private static final class CapturingThreadedSocketAcceptor extends ThreadedSocketAcceptor {
