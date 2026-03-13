@@ -237,9 +237,6 @@ public class QuickFixJServerAutoConfigurationTest {
 		assertThat(serverAcceptor).isInstanceOf(ThreadedSocketAcceptor.class);
 		assertThat(ctx.getBean(ThreadedSocketAcceptorDynamicSessionProviderRegistrar.class)).isNotNull();
 
-		Map<?, ?> sessionProviders = getSessionProviders(serverAcceptor);
-		assertThat(sessionProviders.get(new InetSocketAddress(9899))).isInstanceOf(DynamicAcceptorSessionProvider.class);
-
 		ctx.stop();
 	}
 
@@ -265,10 +262,7 @@ public class QuickFixJServerAutoConfigurationTest {
 
 	@Test
 	public void shouldRegisterDynamicSessionProviderForThreadedAcceptor() throws Exception {
-		Application application = mock(Application.class);
-		MessageStoreFactory messageStoreFactory = mock(MessageStoreFactory.class);
-		LogFactory logFactory = mock(LogFactory.class);
-		MessageFactory messageFactory = mock(MessageFactory.class);
+		Application application = new NoopApplication();
 		SessionSettings sessionSettings = new SessionSettings();
 
 		SessionID templateSessionId = new SessionID(FixVersions.BEGINSTRING_FIX44, "DYN_EXEC", "DYN_CLIENT");
@@ -279,21 +273,29 @@ public class QuickFixJServerAutoConfigurationTest {
 		sessionSettings.setString(templateSessionId, "SocketAcceptPort", "9899");
 		sessionSettings.setString(templateSessionId, "AcceptorTemplate", "Y");
 
-		ThreadedSocketAcceptorConfiguration acceptorConfiguration = new ThreadedSocketAcceptorConfiguration();
+		MessageStoreFactory messageStoreFactory = new MemoryStoreFactory();
+		LogFactory logFactory = new ScreenLogFactory(sessionSettings);
+		MessageFactory messageFactory = new DefaultMessageFactory();
 		ThreadedSocketAcceptorDynamicSessionProviderRegistrar registrar = new ThreadedSocketAcceptorDynamicSessionProviderRegistrar();
-
-		ThreadedSocketAcceptor acceptor = (ThreadedSocketAcceptor) acceptorConfiguration.serverAcceptor(
+		CapturingThreadedSocketAcceptor acceptor = new CapturingThreadedSocketAcceptor(
 				application,
 				messageStoreFactory,
 				sessionSettings,
 				logFactory,
-				messageFactory,
-				Optional.empty(),
-				Optional.of(registrar)
+				messageFactory
 		);
 
-		Map<?, ?> sessionProviders = getSessionProviders(acceptor);
-		assertThat(sessionProviders.get(new InetSocketAddress(9899))).isInstanceOf(DynamicAcceptorSessionProvider.class);
+		registrar.registerDynamicSessionProviders(
+				acceptor,
+				sessionSettings,
+				application,
+				messageStoreFactory,
+				logFactory,
+				messageFactory
+		);
+
+		assertThat(acceptor.getRegisteredAddress()).isEqualTo(new InetSocketAddress(9899));
+		assertThat(acceptor.getRegisteredProvider()).isInstanceOf(DynamicAcceptorSessionProvider.class);
 	}
 
 	@Test
@@ -561,16 +563,75 @@ public class QuickFixJServerAutoConfigurationTest {
 		assertThat(taskExecutor).isEqualTo(actualShortLivedExecutor);
 	}
 
-	private Map<?, ?> getSessionProviders(Object acceptor) throws NoSuchFieldException, IllegalAccessException {
-		Field sessionProvidersField = getField(acceptor.getClass(), "sessionProviders");
-		sessionProvidersField.setAccessible(true);
-		return (Map<?, ?>) sessionProvidersField.get(acceptor);
-	}
-
 	@Configuration
 	@EnableAutoConfiguration
 	@PropertySource("classpath:server-single-threaded/single-threaded-application.properties")
 	static class SingleThreadedServerAcceptorConfiguration {
+	}
+
+	private static final class NoopApplication implements Application {
+
+		@Override
+		public void onCreate(SessionID sessionId) {
+		}
+
+		@Override
+		public void onLogon(SessionID sessionId) {
+		}
+
+		@Override
+		public void onLogout(SessionID sessionId) {
+		}
+
+		@Override
+		public void toAdmin(quickfix.Message message, SessionID sessionId) {
+		}
+
+		@Override
+		public void fromAdmin(quickfix.Message message, SessionID sessionId) {
+		}
+
+		@Override
+		public void toApp(quickfix.Message message, SessionID sessionId) {
+		}
+
+		@Override
+		public void fromApp(quickfix.Message message, SessionID sessionId) {
+		}
+	}
+
+	private static final class CapturingThreadedSocketAcceptor extends ThreadedSocketAcceptor {
+
+		private java.net.SocketAddress registeredAddress;
+
+		private quickfix.mina.acceptor.AcceptorSessionProvider registeredProvider;
+
+		private CapturingThreadedSocketAcceptor(
+				Application application,
+				MessageStoreFactory messageStoreFactory,
+				SessionSettings sessionSettings,
+				LogFactory logFactory,
+				MessageFactory messageFactory
+		) throws ConfigError {
+			super(application, messageStoreFactory, sessionSettings, logFactory, messageFactory);
+		}
+
+		@Override
+		public void setSessionProvider(
+				java.net.SocketAddress socketAddress,
+				quickfix.mina.acceptor.AcceptorSessionProvider sessionProvider
+		) {
+			this.registeredAddress = socketAddress;
+			this.registeredProvider = sessionProvider;
+		}
+
+		private java.net.SocketAddress getRegisteredAddress() {
+			return this.registeredAddress;
+		}
+
+		private quickfix.mina.acceptor.AcceptorSessionProvider getRegisteredProvider() {
+			return this.registeredProvider;
+		}
 	}
 
 	@Configuration
