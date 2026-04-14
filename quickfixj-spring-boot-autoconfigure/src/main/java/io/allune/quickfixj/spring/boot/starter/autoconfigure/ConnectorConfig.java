@@ -48,6 +48,11 @@ public class ConnectorConfig {
 	private String config;
 
 	/**
+	 * Allow resolving placeholders if a configuration file is used.
+	 */
+	private boolean resolvePlaceholders = false;
+
+	/**
 	 * The configuration string to use to initialize QuickFIX/J client/server.
 	 */
 	private String configString;
