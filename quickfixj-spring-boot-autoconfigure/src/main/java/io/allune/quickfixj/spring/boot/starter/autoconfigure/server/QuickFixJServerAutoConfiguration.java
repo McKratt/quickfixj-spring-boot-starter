@@ -539,11 +539,11 @@ public class QuickFixJServerAutoConfiguration {
 	}
 
 	/**
-	 * Creates the client's {@link SessionSettingsLocator}
+	 * Creates the server's {@link SessionSettingsLocator}
 	 *
 	 * @param resourceLoader The {@link ResourceLoader} to use for loading the properties
 	 * @param environment the configurable environment
-	 * @return the client's {@link SessionSettingsLocator}
+	 * @return the server's {@link SessionSettingsLocator}
 	 */
 	@Bean
 	@ConditionalOnProperty(prefix = "quickfixj.server", name = "resolve-placeholders", havingValue = "true")

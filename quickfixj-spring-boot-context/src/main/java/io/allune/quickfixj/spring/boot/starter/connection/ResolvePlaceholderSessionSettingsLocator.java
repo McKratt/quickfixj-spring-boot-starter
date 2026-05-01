@@ -43,11 +43,15 @@ public class ResolvePlaceholderSessionSettingsLocator extends SessionSettingsLoc
 	}
 
 	/**
-     * Reads the resource and resolves any placeholders.
+	 * Reads the resource and resolves any placeholders. Unresolvable placeholders without a default
+	 * value cause an {@link IllegalArgumentException} to be thrown so configuration errors fail fast
+	 * rather than being silently passed through to QuickFIX/J as literal {@code ${...}} values.
+	 *
 	 * @param resource the resource
-     * @return the input stream of the resource with placeholders resolved
+	 * @return the input stream of the resource with placeholders resolved
 	 * @throws IOException if the content stream could not be opened
-	 * @see ConfigurableEnvironment#resolvePlaceholders(String)
+	 * @throws IllegalArgumentException if a placeholder cannot be resolved
+	 * @see ConfigurableEnvironment#resolveRequiredPlaceholders(String)
 	 */
 	@Override
 	public InputStream readResource(Resource resource) throws IOException {
@@ -56,7 +60,7 @@ public class ResolvePlaceholderSessionSettingsLocator extends SessionSettingsLoc
 			StandardCharsets.UTF_8
 		);
 
-		String resolved = environment.resolvePlaceholders(content);
+		String resolved = environment.resolveRequiredPlaceholders(content);
 		return new ByteArrayInputStream(resolved.getBytes(StandardCharsets.UTF_8));
 	}
 }

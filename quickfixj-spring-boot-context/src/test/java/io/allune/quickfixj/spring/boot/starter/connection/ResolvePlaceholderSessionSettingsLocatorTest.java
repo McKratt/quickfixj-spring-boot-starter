@@ -15,6 +15,7 @@
  */
 package io.allune.quickfixj.spring.boot.starter.connection;
 
+import io.allune.quickfixj.spring.boot.starter.exception.SettingsNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -25,6 +26,7 @@ import quickfix.SessionSettings;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Richard Jones
@@ -64,5 +66,17 @@ public class ResolvePlaceholderSessionSettingsLocatorTest {
 		assertThat("23:59:00").isEqualTo(settings.getString("EndTime"));
 		assertThat("30").isEqualTo(settings.getString("HeartBtInt"));
 		assertThat("5").isEqualTo(settings.getString("ReconnectInterval"));
+	}
+
+	@Test
+	void shouldFailWhenPlaceholderCannotBeResolved() {
+		StandardEnvironment environment = new StandardEnvironment();
+
+		SessionSettingsLocator sessionSettingsLocator = new ResolvePlaceholderSessionSettingsLocator(new DefaultResourceLoader(), environment);
+
+		assertThatThrownBy(() -> sessionSettingsLocator.loadSettings("classpath:quickfixj-placeholders-required.cfg", null, null, null))
+			.isInstanceOf(SettingsNotFoundException.class)
+			.hasRootCauseInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("START_TIME");
 	}
 }
