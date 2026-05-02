@@ -209,7 +209,7 @@ to configure the FIX sessions. The configuration is resolved using the following
 
 |quickfixj.server.resolve-placeholders
 |true
-|Whether to resolve `${...}` placeholders against the Spring Environment. This *only* works with the configuration file configured in `quickfixj.server.config`. (default: `false`)
+|Whether to resolve `${...}` placeholders against the Spring Environment. This *only* works when used with `quickfixj.server.config`. (default: `false`)
 
 |quickfixj.server.config
 |classpath:quickfixj-server.cfg
@@ -704,7 +704,7 @@ to configure the FIX sessions. The configuration is resolved using the following
 
 |quickfixj.client.resolve-placeholders
 |true
-|Whether to resolve `${...}` placeholders against the Spring Environment. This *only* works with the configuration file configured in `quickfixj.client.config`. (default: `false`)
+|Whether to resolve `${...}` placeholders against the Spring Environment. This *only* works when used with `quickfixj.client.config`. (default: `false`)
 
 |quickfixj.client.config
 |classpath:quickfixj-client.cfg
