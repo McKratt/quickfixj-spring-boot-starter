@@ -1,6 +1,8 @@
+:current-version: 4.2.0
+
 image:https://dl.circleci.com/status-badge/img/gh/esanchezros/quickfixj-spring-boot-starter/tree/main.svg?style=shield["CircleCI", link="https://dl.circleci.com/status-badge/redirect/gh/esanchezros/quickfixj-spring-boot-starter/tree/main"]
 image:https://codecov.io/gh/esanchezros/quickfixj-spring-boot-starter/branch/main/graph/badge.svg?token=DhK6IBGZMS["codecov",link="https://codecov.io/gh/esanchezros/quickfixj-spring-boot-starter"]
-image:https://img.shields.io/badge/maven%20central-v4.0.0-blue.svg["Maven Central",link="https://search.maven.org/#search%7Cga%7C1%7Ca%3A%22quickfixj-spring-boot-starter%22"]
+image:https://img.shields.io/badge/maven%20central-v{current-version}-blue.svg["Maven Central",link="https://search.maven.org/#search%7Cga%7C1%7Ca%3A%22quickfixj-spring-boot-starter%22"]
 image:https://img.shields.io/hexpm/l/plug.svg["Apache 2",link="http://www.apache.org/licenses/LICENSE-2.0"]
 image:https://img.shields.io/badge/quickfixj-2.3.2-blue.svg["QuickFIX/J 2.3.2", link="https://github.com/quickfix-j/quickfixj"]
 image:https://app.codacy.com/project/badge/Grade/1c6bf92b53324a45ba587e061dc6547d["Codacy code quality", link="https://www.codacy.com/gh/esanchezros/quickfixj-spring-boot-starter/dashboard?utm_source=github.com&utm_medium=referral&utm_content=esanchezros/quickfixj-spring-boot-starter&utm_campaign=Badge_Grade"]
@@ -19,12 +21,12 @@ In this Spring Boot Starter, QuickFIX/J Server is equivalent to `Acceptor` and Q
 
 To use the QuickFIX/J Server or QuickFIX/J Client you need to add the QuickFIX/J Spring Boot Starter dependency in your project.
 
-[source,xml]
+[source,xml,subs="+attributes"]
 ----
 <dependency>
     <groupId>io.allune</groupId>
     <artifactId>quickfixj-spring-boot-starter</artifactId>
-    <version>4.0.0</version>
+    <version>{current-version}</version>
 </dependency>
 ----
 
@@ -38,12 +40,12 @@ For more information about customising the QuickFIX/J Runtime refer to https://g
 
 For example, import the `quickfixj-spring-boot-started` pom in your `dependencyManagement` section:
 
-[source,xml]
+[source,xml,subs="+attributes"]
 ----
 <dependency>
     <groupId>io.allune</groupId>
     <artifactId>quickfixj-spring-boot-starter</artifactId>
-    <version>4.0.0</version>
+    <version>{current-version}</version>
     <type>pom</type>
     <scope>import</scope>
 </dependency>
@@ -207,6 +209,10 @@ to configure the FIX sessions. The configuration is resolved using the following
 |true
 |Whether the QuickFix/J Server is enabled.
 
+|quickfixj.server.resolve-placeholders
+|true
+|Whether to resolve `${...}` placeholders against the Spring Environment. This *only* works when used with `quickfixj.server.config`. (default: `false`)
+
 |quickfixj.server.config
 |classpath:quickfixj-server.cfg
 |Location of the QuickFix/J configuration file.
@@ -289,6 +295,7 @@ For example:
 [source,properties]
 ----
 quickfixj.server.enabled=true
+quickfixj.server.resolve-placeholders=true
 quickfixj.server.config=classpath:quickfixj-server.cfg
 quickfixj.server.configString=[default]  \r\n\... (see below for an example)
 quickfixj.server.auto-startup=true
@@ -316,6 +323,7 @@ quickfixj.server.concurrent.threadNamePrefix="QuickFixJ Spring Boot Starter thre
 quickfixj:
   server:
     enabled: true
+    resolve-placeholders: true
     config: classpath:quickfixj-server.cfg
     auto-startup: true
     force-disconnect: false
@@ -363,6 +371,44 @@ BeginString=FIX.4.4
 SenderCompID=EXECUTOR
 TargetCompID=*
 SocketAcceptPort=9876
+AcceptorTemplate=Y
+----
+
+=== QuickFIX/J Server placeholder resolution
+When using `quickfixj.server.config` placeholder resolution can be enabled using the `quickfixj.server.resolve-placeholders` property. See Spring Boot's https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.files.property-placeholders[Property Placeholder] documentation for further information.
+
+[source,properties]
+----
+quickfixj.client.resolve-placeholders=true
+quickfixj.client.config=classpath:quickfixj-client.cfg
+fix.sender-comp-id=EXECUTOR
+fix.target-comp-id=*
+----
+
+[source,yml]
+----
+quickfixj:
+  client:
+    resolve-placeholders: true
+    config: classpath:quickfixj-client.cfg
+fix:
+  sender-comp-id: EXECUTOR
+  target-comp-id: *
+----
+
+[source,ini]
+----
+[default]
+ConnectionType=acceptor
+StartTime=00:00:00
+EndTime=00:00:00
+HeartBtInt=30
+
+[session]
+BeginString=FIX.4.4
+SenderCompID=${FIX_SENDERCOMPID}
+TargetCompID=${FIX_TARGETCOMPID}
+SocketAcceptPort=${FIX_SOCKETACCEPTPORT:9876}
 AcceptorTemplate=Y
 ----
 
@@ -459,12 +505,12 @@ quickfixj:
 
 To enable the actuator endpoints you will also have to add the QuickFIX/J Spring Boot Actuator dependency.
 
-[source,xml]
+[source,xml,subs="+attributes"]
 ----
 <dependency>
     <groupId>io.allune</groupId>
     <artifactId>quickfixj-spring-boot-actuator</artifactId>
-    <version>4.0.0</version>
+    <version>{current-version}</version>
 </dependency>
 ----
 
@@ -658,6 +704,10 @@ to configure the FIX sessions. The configuration is resolved using the following
 |true
 |Whether the QuickFix/J Client is enabled.
 
+|quickfixj.client.resolve-placeholders
+|true
+|Whether to resolve `${...}` placeholders against the Spring Environment. This *only* works when used with `quickfixj.client.config`. (default: `false`)
+
 |quickfixj.client.config
 |classpath:quickfixj-client.cfg
 |Location of the QuickFix/J configuration file.
@@ -736,6 +786,7 @@ For example:
 [source,properties]
 ----
 quickfixj.client.enabled=true
+quickfixj.client.resolve-placeholders=true
 quickfixj.client.config=classpath:quickfixj-client.cfg
 quickfixj.client.configString=[default]  \r\n\... (see below for an example)
 quickfixj.client.auto-startup=true
@@ -761,6 +812,7 @@ quickfixj.client.concurrent.threadNamePrefix="QuickFixJ Spring Boot Starter thre
 quickfixj:
   client:
     enabled: true
+    resolve-placeholders: true
     config: classpath:quickfixj-client.cfg
     auto-startup: true
     force-disconnect: false
@@ -779,6 +831,41 @@ quickfixj:
       threadNamePrefix: "QuickFixJ Spring Boot Starter thread-"
     message-store-factory: memory
     log-factory: screen
+----
+
+=== QuickFIX/J Client placeholder resolution
+When using `quickfixj.client.config` placeholder resolution can be enabled using the `quickfixj.client.resolve-placeholders` property. See Spring Boot's https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.files.property-placeholders[Property Placeholder] documentation for further information.
+
+[source,properties]
+----
+quickfixj.client.resolve-placeholders=true
+quickfixj.client.config=classpath:quickfixj-client.cfg
+fix.sender-comp-id=EXEC
+fix.target-comp-id=BANZI
+fix.host=localhost
+----
+
+[source,yml]
+----
+quickfixj:
+  client:
+    resolve-placeholders: true
+    config: classpath:quickfixj-client.cfg
+fix:
+  sender-comp-id: EXEC
+  target-comp-id: BANZI
+  host: localhost
+----
+
+[source,ini]
+----
+[SESSION]
+BeginString=FIX.4.4
+SessionQualifier=Example
+SenderCompID=${FIX_SENDERCOMPID}
+TargetCompID=${FIX_TARGETCOMPID}
+SocketConnectHost=${FIX_HOST}
+SocketConnectPort=${FIX_PORT:9876}
 ----
 
 === QuickFIX/J configuration file in properties and yaml files
@@ -872,12 +959,12 @@ quickfixj:
 
 To enable the actuator endpoints you will also have to add the QuickFIX/J Spring Boot Actuator dependency.
 
-[source,xml]
+[source,xml,subs="+attributes"]
 ----
 <dependency>
     <groupId>io.allune</groupId>
     <artifactId>quickfixj-spring-boot-actuator</artifactId>
-    <version>4.0.0</version>
+    <version>{current-version}</version>
 </dependency>
 ----
 
