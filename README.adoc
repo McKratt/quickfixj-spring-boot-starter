@@ -1,23 +1,24 @@
-:current-version: 4.2.0
+:current-version: 5.0.0
+:quickfixj-version: 3.0.0
 
 image:https://dl.circleci.com/status-badge/img/gh/esanchezros/quickfixj-spring-boot-starter/tree/main.svg?style=shield["CircleCI", link="https://dl.circleci.com/status-badge/redirect/gh/esanchezros/quickfixj-spring-boot-starter/tree/main"]
 image:https://codecov.io/gh/esanchezros/quickfixj-spring-boot-starter/branch/main/graph/badge.svg?token=DhK6IBGZMS["codecov",link="https://codecov.io/gh/esanchezros/quickfixj-spring-boot-starter"]
 image:https://img.shields.io/badge/maven%20central-v{current-version}-blue.svg["Maven Central",link="https://search.maven.org/#search%7Cga%7C1%7Ca%3A%22quickfixj-spring-boot-starter%22"]
 image:https://img.shields.io/hexpm/l/plug.svg["Apache 2",link="http://www.apache.org/licenses/LICENSE-2.0"]
-image:https://img.shields.io/badge/quickfixj-2.3.2-blue.svg["QuickFIX/J 2.3.2", link="https://github.com/quickfix-j/quickfixj"]
+image:https://img.shields.io/badge/quickfixj-{quickfixj-version}-blue.svg["QuickFIX/J {quickfixj-version}", link="https://github.com/quickfix-j/quickfixj"]
 image:https://app.codacy.com/project/badge/Grade/1c6bf92b53324a45ba587e061dc6547d["Codacy code quality", link="https://www.codacy.com/gh/esanchezros/quickfixj-spring-boot-starter/dashboard?utm_source=github.com&utm_medium=referral&utm_content=esanchezros/quickfixj-spring-boot-starter&utm_campaign=Badge_Grade"]
 image:https://api.securityscorecards.dev/projects/github.com/esanchezros/quickfixj-spring-boot-starter/badge["OpenSSF Scorecard", link="https://securityscorecards.dev/viewer/?uri=github.com/esanchezros/quickfixj-spring-boot-starter"]
 
-= Spring Boot Starter for QuickFIX/J (Spring Boot 4)
+== Spring Boot Starter for QuickFIX/J (Spring Boot 4)
 
 This project is a https://spring.io/projects/spring-boot/[Spring Boot Starter] for https://github.com/quickfix-j/quickfixj[QuickFIX/J messaging engine for the FIX protocol].
-It simplifies the configuration required to create and start an https://www.quickfixj.org/javadoc/2.3.0/quickfix/Initiator.html[Initiator] or https://www.quickfixj.org/javadoc/2.3.0/quickfix/Acceptor.html[Acceptor], and handles the lifecycle of the https://www.quickfixj.org/javadoc/2.3.0/quickfix/Connector.html[Connector].
+It simplifies the configuration required to create and start an https://github.com/quickfix-j/quickfixj/blob/QFJ_RELEASE_3_0_0/quickfixj-core/src/main/java/quickfix/Initiator.java[Initiator] or https://github.com/quickfix-j/quickfixj/blob/QFJ_RELEASE_3_0_0/quickfixj-core/src/main/java/quickfix/Acceptor.java[Acceptor], and handles the lifecycle of the https://github.com/quickfix-j/quickfixj/blob/QFJ_RELEASE_3_0_0/quickfixj-core/src/main/java/quickfix/Connector.java[Connector].
 
-== Terminology
+=== Terminology
 
 In this Spring Boot Starter, QuickFIX/J Server is equivalent to `Acceptor` and QuickFIX/J Client to `Initiator`.
 
-== Getting started
+=== Getting started
 
 To use the QuickFIX/J Server or QuickFIX/J Client you need to add the QuickFIX/J Spring Boot Starter dependency in your project.
 
@@ -30,7 +31,7 @@ To use the QuickFIX/J Server or QuickFIX/J Client you need to add the QuickFIX/J
 </dependency>
 ----
 
-## QuickFIX/J Runtime
+=== QuickFIX/J Runtime
 
 The QuickFIX/J Spring Boot Starter no longer includes ```quickfixj-messages-all``` dependency and now includes the standard published FIX specification versions from FIX 4.0 to FIX Latest built by the QuickFIX/J project as __optional__ dependency. They are **not** specified as _runtime_ dependencies any longer, which makes it easier to customise QuickFIX/J deployments.
 
@@ -69,7 +70,13 @@ and add the specific version(s) of the FIX messages you need in your project `de
 </dependency>
 ----
 
-== Breaking changes with previous versions
+=== Breaking changes with previous versions
+
+==== 4.x.x => 5.0.0
+
+There is no API break but the code cannot run with old version of QuickfixJ.
+
+==== 3.x.x => 4.0.0
 
 Due to the changes in https://github.com/spring-projects/spring-framework/wiki/Upgrading-to-Spring-Framework-6.x#core-container[how dependencies are autowired from Spring Framework 6.1] and https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.2-Release-Notes#parameter-name-discovery[Parameter Name Discovery], having the quickfixj client and server in the same spring context is not supported.
 
@@ -135,9 +142,9 @@ public class ApplicationConfiguration {
 }
 ----
 
-== QuickFIX/J Spring Boot Starter - Server (Acceptor)
+=== QuickFIX/J Spring Boot Starter - Server (Acceptor)
 
-=== Enabling QuickFix/J Server
+==== Enabling QuickFix/J Server
 
 Adding `quickfixj.server.enabled=true` in your properties file will configure an Acceptor with all the default QuickFix/J components:
 
@@ -186,9 +193,9 @@ public class AppServer {
 }
 ----
 
-=== Configuring the QuickFix/J Server
+==== Configuring the QuickFix/J Server
 
-Additionally, you need to follow the https://www.quickfixj.org/usermanual/2.3.0/usage/configuration.html[configuration guide]
+Additionally, you need to follow the https://quickfixj.org/docs/configuration[configuration guide]
 to configure the FIX sessions. The configuration is resolved using the following approach:
 
 * By a QuickFIX/J configuration string defined by the `quickfixj.server.configString` property
@@ -197,7 +204,7 @@ to configure the FIX sessions. The configuration is resolved using the following
 * By the presence of the `quickfixj.server.config` system property
 * By a `quickfixj-server.cfg` in the working directory or at the root of the classpath
 
-=== QuickFIX/J Server properties
+==== QuickFIX/J Server properties
 
 [cols="3*", options="header"]
 |===
@@ -346,7 +353,7 @@ quickfixj:
     log-factory: screen
 ----
 
-=== QuickFIX/J Server dynamic sessions
+==== QuickFIX/J Server dynamic sessions
 
 Dynamic sessions are supported when using `ThreadedSocketAcceptor`. Enable them with
 `quickfixj.server.dynamic.enabled=true` and define one or more session templates in the QuickFIX/J
@@ -374,7 +381,7 @@ SocketAcceptPort=9876
 AcceptorTemplate=Y
 ----
 
-=== QuickFIX/J Server placeholder resolution
+==== QuickFIX/J Server placeholder resolution
 When using `quickfixj.server.config` placeholder resolution can be enabled using the `quickfixj.server.resolve-placeholders` property. See Spring Boot's https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.files.property-placeholders[Property Placeholder] documentation for further information.
 
 [source,properties]
@@ -412,7 +419,7 @@ SocketAcceptPort=${FIX_SOCKETACCEPTPORT:9876}
 AcceptorTemplate=Y
 ----
 
-=== QuickFIX/J Server configuration file in properties and yaml files
+==== QuickFIX/J Server configuration file in properties and yaml files
 
 Using the `quickfixj.server.configString` property:
 
@@ -501,7 +508,7 @@ quickfixj:
       SocketAcceptPort=9881
 ----
 
-=== QuickFIX/J Server Actuator
+==== QuickFIX/J Server Actuator
 
 To enable the actuator endpoints you will also have to add the QuickFIX/J Spring Boot Actuator dependency.
 
@@ -597,7 +604,7 @@ Example usage:
 }
 ----
 
-=== QuickFIX/J Server Health Endpoint
+==== QuickFIX/J Server Health Endpoint
 
 The QuickFIX/J Spring Boot Starter provides with a `HealthIndicator` that checks if the sessions are logged on when they should be (i.e. within market hours) and shows the expected schedule for each session.
 For example:
@@ -630,9 +637,9 @@ management:
 ----
 
 
-== QuickFIX/J Spring Boot Starter - Client (Initiator)
+=== QuickFIX/J Spring Boot Starter - Client (Initiator)
 
-=== Enabling QuickFix/J Client
+==== Enabling QuickFix/J Client
 
 Adding `quickfixj.client.enabled=true` in your properties file will configure an Initiator with all the default QuickFix/J components:
 
@@ -681,9 +688,9 @@ public class AppClient {
 }
 ----
 
-=== Configuring the QuickFix/J Client
+==== Configuring the QuickFix/J Client
 
-Additionally, you need to follow the https://www.quickfixj.org/usermanual/2.3.0/usage/configuration.html[configuration guide]
+Additionally, you need to follow the https://quickfixj.org/docs/configuration[configuration guide]
 to configure the FIX sessions. The configuration is resolved using the following approach:
 
 * By a QuickFIX/J configuration string defined by the `quickfixj.client.configString` property
@@ -692,7 +699,7 @@ to configure the FIX sessions. The configuration is resolved using the following
 * By the presence of the `quickfixj.client.config` system property
 * By a `quickfixj-client.cfg` in the working directory or at the root of the classpath
 
-=== QuickFIX/J Client properties
+==== QuickFIX/J Client properties
 
 [cols="3*", options="header"]
 |===
@@ -833,7 +840,7 @@ quickfixj:
     log-factory: screen
 ----
 
-=== QuickFIX/J Client placeholder resolution
+==== QuickFIX/J Client placeholder resolution
 When using `quickfixj.client.config` placeholder resolution can be enabled using the `quickfixj.client.resolve-placeholders` property. See Spring Boot's https://docs.spring.io/spring-boot/reference/features/external-config.html#features.external-config.files.property-placeholders[Property Placeholder] documentation for further information.
 
 [source,properties]
@@ -868,7 +875,7 @@ SocketConnectHost=${FIX_HOST}
 SocketConnectPort=${FIX_PORT:9876}
 ----
 
-=== QuickFIX/J configuration file in properties and yaml files
+==== QuickFIX/J configuration file in properties and yaml files
 
 Using the `quickfixj.client.configString` property:
 
@@ -955,7 +962,7 @@ quickfixj:
       SocketConnectPort=9881
 ----
 
-=== QuickFIX/J Client Actuator
+==== QuickFIX/J Client Actuator
 
 To enable the actuator endpoints you will also have to add the QuickFIX/J Spring Boot Actuator dependency.
 
@@ -1050,7 +1057,7 @@ Example usage:
 }
 ----
 
-=== QuickFIX/J Client Health Endpoint
+==== QuickFIX/J Client Health Endpoint
 
 The QuickFIX/J Spring Boot Starter provides with a `HealthIndicator` that checks if the sessions are logged on when they should be (i.e. within market hours) and shows the expected schedule for each session.
 For example:
@@ -1082,7 +1089,7 @@ management:
       enabled: true
 ----
 
-== Listening on quickfixj.Application messages
+=== Listening on quickfixj.Application messages
 
 The QuickFIX/J Spring Boot Starter provides a default implementation for the `quickfixj.Application` interface, the `EventPublisherApplicationAdapter`, which publishes the messages received by the Server (Acceptor) and the Client (Initiator) as `ApplicationEvent`s. The `EventPublisherApplicationAdapter` is provided by default, it's not meant to be used on `high throughput environments`.
 
@@ -1129,7 +1136,7 @@ public void listenToApp(ToApp toApp) {
 In case the `EventListener` method throws an exception, this exception will be propagated up the `quickfix.Session#next()` method.
 Depending on the value of `RejectMessageOnUnhandledException` in the quickfixj configuration file, the message will be redelivered or dismissed.
 
-== QuickFixJTemplate
+=== QuickFixJTemplate
 
 The `QuickFixJTemplate` provides a synchronous client to perform requests, exposing a simple, template method API over the QuickFIX/J client.
 
@@ -1159,7 +1166,7 @@ quickFixJTemplate.send(message, sessionID);
 
 ----
 
-== Examples Projects
+=== Examples Projects
 https://github.com/esanchezros/quickfixj-spring-boot-starter-examples[quickfixj-spring-boot-starter-examples]
 
 * https://github.com/esanchezros/quickfixj-spring-boot-starter-examples/tree/master/docker-server-client[QuickFIX/J Spring Boot Server and Client applications as Docker containers]
@@ -1174,7 +1181,7 @@ https://github.com/esanchezros/quickfixj-spring-boot-starter-examples[quickfixj-
 * https://github.com/esanchezros/quickfixj-spring-boot-starter-examples/tree/master/simple-server-with-database[QuickFIX/J Spring Boot Server application with database message store]
 * https://github.com/esanchezros/quickfixj-spring-boot-starter-examples/tree/master/simple-server[QuickFIX/J Spring Boot Server application]
 
-== License and Acknowledgement
+=== License and Acknowledgement
 
 The QuickFIX/J Spring Boot Starter is released under version 2.0 of the http://www.apache.org/licenses/LICENSE-2.0[Apache License].
 
