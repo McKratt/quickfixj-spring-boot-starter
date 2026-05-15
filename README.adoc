@@ -1,4 +1,4 @@
-:current-version: 5.0.0
+:current-version: 4.3.0
 :quickfixj-version: 3.0.1
 
 image:https://dl.circleci.com/status-badge/img/gh/esanchezros/quickfixj-spring-boot-starter/tree/main.svg?style=shield["CircleCI", link="https://dl.circleci.com/status-badge/redirect/gh/esanchezros/quickfixj-spring-boot-starter/tree/main"]
